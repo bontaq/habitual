@@ -27,3 +27,9 @@ retract row = insert row False
 -- db add should assign a db/txInstant
 
 -- [:db/retract entity-id attribute value]
+
+-- '[:find ?txInstant .
+--   :where [?a :artist/name "The Rolling Stones" ?tx]
+--          [?tx :db/txInstant ?txInstant]]
+
+-- how 2 build rulez engine buhhhhh
