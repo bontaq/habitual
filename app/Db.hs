@@ -8,15 +8,19 @@ type Value         = Either String Integer
 type TransactionId = Integer
 type Operation     = Bool -- indicates if it has been added or removed
 
-data Row = EntityId Attribute Value TransactionId Operation
+data FullRow = EntityId Attribute Value TransactionId Operation
+data Row = EntityId Attribute Value
 
-mkTx = undefined
+mkTx :: Row -> Operation -> IO ()
+mkTx row retract = do
+  time <- getPOSIXTime
+  pure $ row retract
 
-insert :: Row -> Operation -> Bool
-insert row retract = undefined
+insert :: Row -> Bool
+insert row = mkTx True
 
 retract :: Row -> Bool
-retract row = insert row False
+retract row = mkTx False
 
 -- what's the schema like?
 -- day should be derived by time
