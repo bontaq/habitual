@@ -15,3 +15,11 @@ data AppState = AppState {
   -- , _sprints      :: L.List () Sprint
   -- , _opts         :: Network.Wreq.Options
   }
+
+type EntityId      = Integer
+type Attribute     = String
+type Value         = String
+type TransactionId = Integer
+type Operation     = Bool -- indicates if it has been added or removed
+
+data Row = EntityId Attribute Value TransactionId Operation
