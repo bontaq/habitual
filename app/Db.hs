@@ -1,6 +1,7 @@
 module Db where
 
 import Data.Time.Clock.POSIX
+import qualified Data.Text as T
 
 type EntityId      = Integer
 type Attribute     = String
@@ -30,6 +31,14 @@ insert row = mkTx row False >>= writeDb . show
 
 retract :: PartialRow -> IO ()
 retract row = mkTx row True >>= writeDb . show
+
+readDb :: IO [Row]
+readDb = do
+  raw <- readFile "./db.txt"
+  pure $ fmap (\((e, a, v, t, r)) -> Row e a v t r) $ read raw
+  -- undefined
+  where
+    read = fmap (T.split (== ',')) . T.lines . T.pack
 
 -- what's the schema like?
 -- day should be derived by time
