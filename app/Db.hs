@@ -9,19 +9,29 @@ type TransactionId = POSIXTime
 type Operation     = Bool -- indicates if it has been added or removed
 
 data Row = Row EntityId Attribute Value TransactionId Operation
-           deriving Show
+instance Show Row where
+  show (Row e a (Left v) t r) =
+    (show e) <> "," <> a <> "," <> v <> "," <> (show t) <> "," <> (show r) <> "\n"
+  show (Row e a (Right v) t r) =
+    (show e) <> "," <> a <> "," <> (show v) <> "," <> (show t) <> "," <> (show r)
+
 data PartialRow = PartialRow EntityId Attribute Value
+
+writeDb :: String -> IO ()
+writeDb = appendFile "./db.txt"
 
 mkTx :: PartialRow -> Operation -> IO Row
 mkTx (PartialRow e a v) retract = do
   time <- getPOSIXTime
   pure $ Row e a v time retract
 
-insert :: PartialRow -> IO Row
-insert row = mkTx row False
+insert :: PartialRow -> IO ()
+insert row = do
+  row <- mkTx row False
+  writeDb $ show row
 
-retract :: PartialRow -> Bool
-retract row = mkTx row False
+retract :: PartialRow -> IO Row
+retract row = mkTx row True
 
 -- what's the schema like?
 -- day should be derived by time
