@@ -26,12 +26,10 @@ mkTx (PartialRow e a v) retract = do
   pure $ Row e a v time retract
 
 insert :: PartialRow -> IO ()
-insert row = do
-  row <- mkTx row False
-  writeDb $ show row
+insert row = mkTx row False >>= writeDb . show
 
-retract :: PartialRow -> IO Row
-retract row = mkTx row True
+retract :: PartialRow -> IO ()
+retract row = mkTx row True >>= writeDb . show
 
 -- what's the schema like?
 -- day should be derived by time
