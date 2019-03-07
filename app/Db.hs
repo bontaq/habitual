@@ -5,22 +5,23 @@ import Data.Time.Clock.POSIX
 type EntityId      = Integer
 type Attribute     = String
 type Value         = Either String Integer
-type TransactionId = Integer
+type TransactionId = POSIXTime
 type Operation     = Bool -- indicates if it has been added or removed
 
-data FullRow = EntityId Attribute Value TransactionId Operation
-data Row = EntityId Attribute Value
+data Row = Row EntityId Attribute Value TransactionId Operation
+           deriving Show
+data PartialRow = PartialRow EntityId Attribute Value
 
-mkTx :: Row -> Operation -> IO ()
-mkTx row retract = do
+mkTx :: PartialRow -> Operation -> IO Row
+mkTx (PartialRow e a v) retract = do
   time <- getPOSIXTime
-  pure $ row retract
+  pure $ Row e a v time retract
 
-insert :: Row -> Bool
-insert row = mkTx True
+insert :: PartialRow -> IO Row
+insert row = mkTx row False
 
-retract :: Row -> Bool
-retract row = mkTx False
+retract :: PartialRow -> Bool
+retract row = mkTx row False
 
 -- what's the schema like?
 -- day should be derived by time
