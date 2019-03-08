@@ -1,12 +1,14 @@
 module Db where
 
+import Control.Applicative
 import Data.Time.Clock.POSIX
 import qualified Data.Text as T
+import Text.Trifecta
 
 type EntityId      = Integer
 type Attribute     = String
 type Value         = Either String Integer
-type TransactionId = POSIXTime
+type TransactionId = Integer
 type Operation     = Bool -- indicates if it has been added or removed
 
 data Row = Row EntityId Attribute Value TransactionId Operation
@@ -23,8 +25,8 @@ writeDb = appendFile "./db.txt"
 
 mkTx :: PartialRow -> Operation -> IO Row
 mkTx (PartialRow e a v) retract = do
-  time <- getPOSIXTime
-  pure $ Row e a v time retract
+  -- time <- getPOSIXTime
+  pure $ Row e a v 1 retract
 
 insert :: PartialRow -> IO ()
 insert row = mkTx row False >>= writeDb . show
@@ -32,13 +34,27 @@ insert row = mkTx row False >>= writeDb . show
 retract :: PartialRow -> IO ()
 retract row = mkTx row True >>= writeDb . show
 
-readDb :: IO [Row]
+parseRow :: Parser Row
+parseRow = do
+  entityId <- integer
+  char ','
+  attribute <- manyTill anyChar (try (char ','))
+  -- char ','
+  value <- manyTill anyChar (try (char ','))
+  -- char ','
+  txId <- integer
+  char ','
+  rawOp <- try (string "False") <|> (string "True")
+  skipSome (char '\n')
+  let op = case rawOp of
+        _ -> False
+  pure $ Row entityId attribute (Left value) txId op
+
+readDb :: IO (Maybe [Row])
 readDb = do
-  raw <- readFile "./db.txt"
-  -- pure $ fmap (\((e, a, v, t, r)) -> Row e a v t r) $ read raw
-  -- undefined
-  where
-    read = fmap (T.split (== ',')) . T.lines . T.pack
+  -- raw <- readFile "./db.txt"
+  rows <- parseFromFile (many parseRow) "./db.txt"
+  pure $ rows
 
 -- what's the schema like?
 -- day should be derived by time
