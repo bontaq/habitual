@@ -50,10 +50,44 @@ parseRow = do
   pure $ Row entityId attribute (Left value) txId op
 
 readDb :: IO (Maybe [Row])
-readDb = do
-  -- raw <- readFile "./db.txt"
-  rows <- parseFromFile (many parseRow) "./db.txt"
-  pure $ rows
+readDb = parseFromFile (many parseRow) "./db.txt"
+
+data Find = Find String
+            deriving Show
+data Where = Where String String String -- e a v
+             deriving Show
+data Query = Query [Find] [Where]
+             deriving Show
+
+-- this should return all artist names, I think
+testQuery =
+  Query
+  [Find "?name"]
+  [Where "?id" ":artist/name" "?name"]
+
+startsWith :: Eq a => a -> [a] -> Bool
+startsWith m (c:cs) = m == c
+startsWith _  _     = False
+
+findFixed :: Where -> [Integer]
+findFixed (Where a b c) =
+  foldr (\(w, i) acc -> acc <> (fixed w i)) [] indexedWhere
+  where indexedWhere = zip [a, b, c] [0..]
+        fixed w i =
+          case startsWith '?' w of
+            True  -> []
+            False -> [i]
+
+runQuery' :: [Row] -> Where -> [Row]
+runQuery' = undefined
+  -- find fixed (does not start with ?)
+  --
+
+runQuery :: (Maybe [Row]) -> Query -> [Row]
+runQuery Nothing     _     = []
+runQuery (Just rows) query = runQuery' rows (head wheres)
+  where wheres = (\(Query _ ws) -> ws) $ query
+        finds  = (\(Query qs _) -> qs) $ query
 
 -- what's the schema like?
 -- day should be derived by time
@@ -70,3 +104,6 @@ readDb = do
 --          [?tx :db/txInstant ?txInstant]]
 
 -- how 2 build rulez engine buhhhhh
+
+-- [:find ?name
+--  :where [1 :artist/name ?name]]
