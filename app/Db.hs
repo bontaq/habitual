@@ -39,15 +39,14 @@ parseRow = do
   entityId <- integer
   char ','
   attribute <- manyTill anyChar (try (char ','))
-  -- char ','
   value <- manyTill anyChar (try (char ','))
-  -- char ','
   txId <- integer
   char ','
   rawOp <- try (string "False") <|> (string "True")
   skipSome (char '\n')
   let op = case rawOp of
-        _ -> False
+        "False" -> False
+        "True"  -> True
   pure $ Row entityId attribute (Left value) txId op
 
 readDb :: IO (Maybe [Row])
