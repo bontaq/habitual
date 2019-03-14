@@ -1,9 +1,9 @@
 module Db where
 
-import Control.Applicative
-import Data.Time.Clock.POSIX
-import qualified Data.Text as T
-import Text.Trifecta
+import           Control.Applicative
+import           Data.Time.Clock.POSIX
+import qualified Data.Text             as T
+import           Text.Trifecta
 
 type EntityId      = Integer
 type Attribute     = String
@@ -79,9 +79,11 @@ findFixed (Where a b c) =
             False -> [i]
 
 runQuery' :: [Row] -> Where -> [Row]
-runQuery' = undefined
+runQuery' rows w = undefined
+  where fixedIndexes = findFixed w
+        firstRow = head rows
   -- find fixed (does not start with ?)
-  --
+  -- filter rows by fixed
 
 runQuery :: (Maybe [Row]) -> Query -> [Row]
 runQuery Nothing     _     = []
