@@ -77,6 +77,9 @@ attributeFixed (Where _ a _) = not $ startsWith '?' a
 valueFixed (Where _ _ (Left v)) = not $ startsWith '?' v
 valueFixed (Where _ _ (Right v)) = True
 
+checkAgainstFixed :: Row -> Bool
+checkAgainstFixed = undefined
+
 runQuery' :: [Row] -> Where -> [Row]
 runQuery' rows w = undefined
   where
