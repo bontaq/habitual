@@ -54,7 +54,7 @@ readDb = parseFromFile (many parseRow) "./db.txt"
 
 data Find = Find String
             deriving Show
-data Where = Where String String String -- e a v
+data Where = Where (Either String Integer) String (Either String Integer) -- e a v
              deriving Show
 data Query = Query [Find] [Where]
              deriving Show
@@ -63,27 +63,25 @@ data Query = Query [Find] [Where]
 testQuery =
   Query
   [Find "?name"]
-  [Where "?id" ":artist/name" "?name"]
+  [Where (Left "?id") ":artist/name" (Left "?name")]
 
 startsWith :: Eq a => a -> [a] -> Bool
 startsWith m (c:cs) = m == c
 startsWith _  _     = False
 
-findFixed :: Where -> [Integer]
-findFixed (Where a b c) =
-  foldr (\(w, i) acc -> acc <> (fixed w i)) [] indexedWhere
-  where indexedWhere = zip [a, b, c] [0..]
-        fixed w i =
-          case startsWith '?' w of
-            True  -> []
-            False -> [i]
+entityIdFixed (Where (Left e) _ _) = not $ startsWith '?' e
+entityIdFixed (Where (Right _) _ _) = True
+
+attributeFixed (Where _ a _) = not $ startsWith '?' a
+
+valueFixed (Where _ _ (Left v)) = not $ startsWith '?' v
+valueFixed (Where _ _ (Right v)) = True
 
 runQuery' :: [Row] -> Where -> [Row]
 runQuery' rows w = undefined
-  where fixedIndexes = findFixed w
-        firstRow = head rows
-  -- find fixed (does not start with ?)
-  -- filter rows by fixed
+  where
+    firstRow = head rows
+    -- genericUnfixed = startsWith '?'
 
 runQuery :: (Maybe [Row]) -> Query -> [Row]
 runQuery Nothing     _     = []
