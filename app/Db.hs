@@ -69,16 +69,55 @@ startsWith :: Eq a => a -> [a] -> Bool
 startsWith m (c:cs) = m == c
 startsWith _  _     = False
 
+--
+--
+--
+
+entityIdFixed' (Left e) = not $ startsWith '?' e
+entityIdFixed' (Right e) = True
+
 entityIdFixed (Where (Left e) _ _) = not $ startsWith '?' e
 entityIdFixed (Where (Right _) _ _) = True
 
+compareEntity :: Either String Integer -> Integer -> Bool
+compareEntity e' e =
+  if entityIdFixed' e'
+  then (\(Right id) -> id == e) e'
+  else True
+
+--
+--
+--
+
+attributeFixed' = not . startsWith '?'
+
 attributeFixed (Where _ a _) = not $ startsWith '?' a
+
+compareAttribute :: String -> String -> Bool
+compareAttribute a' a =
+  if attributeFixed' a'
+  then a' == a
+  else True
+
+--
+--
+--
+valueFixed' (Left e) = not . startsWith '?'
+valueFixed' _        = True
 
 valueFixed (Where _ _ (Left v)) = not $ startsWith '?' v
 valueFixed (Where _ _ (Right v)) = True
 
-checkAgainstFixed :: Row -> Bool
-checkAgainstFixed = undefined
+compareValue :: Either String Integer -> Either String Integer -> Bool
+compareValue = undefined
+
+--
+--
+--
+
+checkAgainstFixed :: Row -> Where -> Bool
+checkAgainstFixed (Row e a v _ _) (Where e' a' v') =
+  undefined
 
 runQuery' :: [Row] -> Where -> [Row]
 runQuery' rows w = undefined
