@@ -63,16 +63,16 @@ data Query = Query [Find] [Where]
 testQuery =
   Query
   [Find "?name"]
-  [Where (Left "?id") ":artist/name" (Left "?name")]
+  [ Where (Left "?id") ":artist/name" (Left "?name")
+  , Where (Left "?id") ":artist/name" (Left "world")]
 
 startsWith :: Eq a => a -> [a] -> Bool
 startsWith m (c:cs) = m == c
 startsWith _  _     = False
 
 --
+-- Entity ID handling
 --
---
-
 entityIdFixed' (Left e) = not $ startsWith '?' e
 entityIdFixed' (Right e) = True
 
@@ -86,9 +86,8 @@ compareEntity e' e =
   else True
 
 --
+-- Attribute handling
 --
---
-
 attributeFixed' = not . startsWith '?'
 
 attributeFixed (Where _ a _) = not $ startsWith '?' a
@@ -100,7 +99,7 @@ compareAttribute a' a =
   else True
 
 --
---
+-- Value handling
 --
 valueFixed' (Left e) = not . startsWith '?' $ e
 valueFixed' _        = True
@@ -116,9 +115,8 @@ compareValue v'@(Left v'') (Left v) =
 compareValue (Right v') (Right v) = v' == v
 
 --
+-- Running a query
 --
---
-
 checkAgainstFixed :: Row -> Where -> Bool
 checkAgainstFixed (Row e a v _ _) (Where e' a' v') =
   let
@@ -134,7 +132,8 @@ runQuery' rows w =
 
 runQuery :: (Maybe [Row]) -> Query -> [Row]
 runQuery Nothing     _     = []
-runQuery (Just rows) query = runQuery' rows (head wheres)
+runQuery (Just rows) query =
+  foldr (flip runQuery') rows wheres
   where wheres = (\(Query _ ws) -> ws) $ query
         finds  = (\(Query qs _) -> qs) $ query
 
