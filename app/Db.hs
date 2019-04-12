@@ -102,14 +102,18 @@ compareAttribute a' a =
 --
 --
 --
-valueFixed' (Left e) = not . startsWith '?'
+valueFixed' (Left e) = not . startsWith '?' $ e
 valueFixed' _        = True
 
 valueFixed (Where _ _ (Left v)) = not $ startsWith '?' v
 valueFixed (Where _ _ (Right v)) = True
 
 compareValue :: Either String Integer -> Either String Integer -> Bool
-compareValue = undefined
+compareValue v'@(Left v'') (Left v) =
+  if valueFixed' v'
+  then v'' == v
+  else True
+compareValue (Right v') (Right v) = v' == v
 
 --
 --
@@ -117,13 +121,16 @@ compareValue = undefined
 
 checkAgainstFixed :: Row -> Where -> Bool
 checkAgainstFixed (Row e a v _ _) (Where e' a' v') =
-  undefined
+  let
+    matchedEntity = compareEntity e' e
+    matchedAttribute = compareAttribute a' a
+    matchedValue = compareValue v' v
+  in
+    all (== True) [matchedEntity, matchedAttribute, matchedValue]
 
 runQuery' :: [Row] -> Where -> [Row]
-runQuery' rows w = undefined
-  where
-    firstRow = head rows
-    -- genericUnfixed = startsWith '?'
+runQuery' rows w =
+  filter (flip checkAgainstFixed $ w) rows
 
 runQuery :: (Maybe [Row]) -> Query -> [Row]
 runQuery Nothing     _     = []
