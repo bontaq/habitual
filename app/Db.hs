@@ -126,16 +126,20 @@ checkAgainstFixed (Row e a v _ _) (Where e' a' v') =
   in
     all (== True) [matchedEntity, matchedAttribute, matchedValue]
 
-runQuery' :: [Row] -> Where -> [Row]
-runQuery' rows w =
+runFilter' :: [Row] -> Where -> [Row]
+runFilter' rows w =
   filter (flip checkAgainstFixed $ w) rows
 
-runQuery :: (Maybe [Row]) -> Query -> [Row]
-runQuery Nothing     _     = []
-runQuery (Just rows) query =
-  foldr (flip runQuery') rows wheres
+runFilter :: (Maybe [Row]) -> Query -> [Row]
+runFilter Nothing     _     = []
+runFilter (Just rows) query =
+  foldr (flip runFilter') rows wheres
   where wheres = (\(Query _ ws) -> ws) $ query
         finds  = (\(Query qs _) -> qs) $ query
+
+--
+-- After basic filtering, starting handling unionizing
+--
 
 -- what's the schema like?
 -- day should be derived by time
