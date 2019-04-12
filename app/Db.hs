@@ -4,6 +4,8 @@ import           Control.Applicative
 import           Data.Time.Clock.POSIX
 import qualified Data.Text             as T
 import           Text.Trifecta
+import Data.Char
+import Data.List
 
 type EntityId      = Integer
 type Attribute     = String
@@ -58,13 +60,6 @@ data Where = Where (Either String Integer) String (Either String Integer) -- e a
              deriving Show
 data Query = Query [Find] [Where]
              deriving Show
-
--- this should return all artist names, I think
-testQuery =
-  Query
-  [Find "?name"]
-  [ Where (Left "?id") ":artist/name" (Left "?name")
-  , Where (Left "?id") ":artist/name" (Left "world")]
 
 startsWith :: Eq a => a -> [a] -> Bool
 startsWith m (c:cs) = m == c
@@ -140,6 +135,21 @@ runFilter (Just rows) query =
 --
 -- After basic filtering, starting handling unionizing
 --
+
+-- this should return all artist names, I think
+testQuery =
+  Query
+  [Find "?name"]
+  [ Where (Left "?id") ":artist/name" (Left "world")
+  , Where (Left "?id") ":artist/lastname" (Left "?name")
+  ]
+
+-- runQuery' og db -> new db -> where -> db
+-- filter by artist name -> new db +
+
+runQuery :: (Maybe [Row]) -> Query -> [Row]
+runQuery Nothing _ = []
+runQuery _ _ = undefined
 
 -- what's the schema like?
 -- day should be derived by time

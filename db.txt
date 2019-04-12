@@ -1,5 +1,8 @@
 1,:artist/name,hello,2,False
+2,:artist/name,bye,2,False
 1,human,sup,2,False
 1,:artist/name,world,2,False
+1,:artist/lastname,world,2,False
+2,:artist/lastname,world,2,False
 1,human,sup,2,False
 1,human,sup,2,True
