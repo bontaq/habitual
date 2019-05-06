@@ -6,6 +6,7 @@ import qualified Data.Text             as T
 import           Text.Trifecta
 import Data.Char
 import Data.List
+import Data.Maybe
 
 type EntityId      = Integer
 type Attribute     = String
@@ -131,6 +132,11 @@ runFilter (Just rows) query =
   foldr (flip runFilter') rows wheres
   where wheres = (\(Query _ ws) -> ws) $ query
         finds  = (\(Query qs _) -> qs) $ query
+
+test = do
+  db <- readDb
+  let q = Where (Left "?id") ":artist/name" (Left "hello")
+  pure $ runFilter' (fromJust db) q
 
 --
 -- After basic filtering, starting handling unionizing
